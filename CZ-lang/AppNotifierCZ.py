@@ -48,6 +48,7 @@ DATA = Data().load()
 PICKED_ACCENT = DATA.get("PICKED_ACCENT", "Modrá")
 PICKED_BODY = DATA.get("PICKED_BODY", "Modrá") 
 PLAY_SOUND = DATA.get("PLAY_SOUND", True)
+SHOW_EXTENSION = DATA.get("SHOW_EXTENSION", True)
 
 COLORS_ACCENT = {
     "Modrá": "#89b4fa",
@@ -89,6 +90,8 @@ class Notification(tk.Toplevel):
     def _build_ui(self, app):
         self.configure(bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"))
 
+        AppName, AppExt = os.path.splitext(app)
+
         # Levý barevný proužek
         accent = tk.Frame(self, bg=COLORS_ACCENT.get(PICKED_ACCENT, "#89b4fa"), width=4)
         accent.pack(side="left", fill="y")
@@ -101,29 +104,34 @@ class Notification(tk.Toplevel):
                          font=("Segoe UI", 8), anchor="w")
         title.pack(fill="x")
 
-        name = tk.Label(body, text=app,
+        name = tk.Label(body, text=AppName,
                         bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg=COLORS_ACCENT.get(PICKED_ACCENT, "#89b4fa"),
                         font=("Segoe UI", 11, "bold"), anchor="w")
         name.pack(fill="x")
 
+        if SHOW_EXTENSION:
+            ext = tk.Label(body, text=AppExt,
+                           bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg="#6c7086",
+                           font=("Segoe UI", 9), anchor="w")
+            ext.pack(fill="x")
+
         # Tlačítko zavřít
         close_btn = tk.Label(self, text="✕", bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg="#6c7086",
-                             font=("Segoe UI", 9), padx=8, cursor="hand2")
+                             font=("Segoe UI", 9), padx=6, cursor="hand2")
         close_btn.pack(side="right", anchor="n", pady=5)
         close_btn.bind("<Button-1>", lambda e: self._slide_out_activate())
 
         # Tlačítko ukončení (otevřené aplikace)
         quit_btn = tk.Label(self, text="🚫", bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg="#f38ba8", 
-                            font=("Segoe UI", 9), padx=8, cursor="hand2")
+                            font=("Segoe UI", 9), padx=6, cursor="hand2")
         quit_btn.pack(side="right", anchor="n", pady=5)
         quit_btn.bind("<Button-1>", lambda e: self._kill_app(app))
 
         # Tlačítko na vyhledání aplikace online
         search_btn = tk.Label(self, text="🔍", bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg="#89b4fa",
-                              font=("Segoe UI", 9), padx=8, cursor="hand2")
+                              font=("Segoe UI", 9), padx=6, cursor="question_arrow")
         search_btn.pack(side="right", anchor="n", pady=5)
         search_btn.bind("<Button-1>", lambda e: self._search_app(app))
-
 
     def _slide_in(self, current_x):
         if current_x > self.target_x:
@@ -222,6 +230,7 @@ class systemTrayIcon:
                 pystray.MenuItem("Modrá", self.change_theme("Modrá")),
                 pystray.MenuItem("Fialová", self.change_theme("Fialová"))
             )),
+            pystray.MenuItem("Ukazovat extension", self.toggle_extension, checked=lambda item: SHOW_EXTENSION),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Ukončit", self.quit)
         )
@@ -236,7 +245,8 @@ class systemTrayIcon:
         Data().save({
             "PICKED_ACCENT": PICKED_ACCENT,
             "PICKED_BODY": PICKED_BODY,
-            "PLAY_SOUND": PLAY_SOUND
+            "PLAY_SOUND": PLAY_SOUND,
+            "SHOW_EXTENSION": SHOW_EXTENSION
         })
 
         self.icon.stop()
@@ -245,10 +255,11 @@ class systemTrayIcon:
     def toggle_sound(self):
         global PLAY_SOUND
         PLAY_SOUND = not PLAY_SOUND
-        Data().save({  # Přidejte toto pro okamžité uložení
+        Data().save({
             "PICKED_ACCENT": PICKED_ACCENT,
             "PICKED_BODY": PICKED_BODY,
-            "PLAY_SOUND": PLAY_SOUND
+            "PLAY_SOUND": PLAY_SOUND,
+            "SHOW_EXTENSION": SHOW_EXTENSION
         })
         self.icon.update_menu()
     
@@ -257,13 +268,25 @@ class systemTrayIcon:
             global PICKED_ACCENT, PICKED_BODY
             PICKED_ACCENT = color
             PICKED_BODY = color
-            Data().save({  # Přidejte toto pro okamžité uložení
+            Data().save({
                 "PICKED_ACCENT": PICKED_ACCENT,
                 "PICKED_BODY": PICKED_BODY,
-                "PLAY_SOUND": PLAY_SOUND
+                "PLAY_SOUND": PLAY_SOUND,
+                "SHOW_EXTENSION": SHOW_EXTENSION
             })
             self.icon.update_menu()
         return inner
+
+    def toggle_extension(self):
+        global SHOW_EXTENSION
+        SHOW_EXTENSION = not SHOW_EXTENSION
+        Data().save({
+            "PICKED_ACCENT": PICKED_ACCENT,
+            "PICKED_BODY": PICKED_BODY,
+            "PLAY_SOUND": PLAY_SOUND,
+            "SHOW_EXTENSION": SHOW_EXTENSION
+        })
+        self.icon.update_menu()
 
 import threading
 
