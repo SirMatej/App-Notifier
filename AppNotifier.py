@@ -68,7 +68,7 @@ COLORS_BODY =  {
 pygame.mixer.init()
 
 class Notification(tk.Toplevel):
-    def __init__(self, parent, app, slot, on_done):
+    def __init__(self, parent, app, slot, on_done, info, showActions):
         super().__init__(parent)
         self.overrideredirect(True)
         self.attributes("-topmost", True)
@@ -82,15 +82,19 @@ class Notification(tk.Toplevel):
         self.y = sh - NOTIF_H - GAP - slot * (NOTIF_H + GAP)
 
         self.geometry(f"{NOTIF_W}x{NOTIF_H}+{self.hidden_x}+{self.y}")
-        self._build_ui(app)
+        self._build_ui(app, info, showActions)
         self.update_idletasks()
         self._playSound("slideIN.wav")
         self._slide_in(self.hidden_x)
 
-    def _build_ui(self, app):
+    def _build_ui(self, app, info, showActions):
         self.configure(bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"))
 
-        AppName, AppExt = os.path.splitext(app)
+        if "." in app:
+            AppName, AppExt = os.path.splitext(app)
+        else:
+            AppName = app
+            AppExt = ""
 
         accent = tk.Frame(self, bg=COLORS_ACCENT.get(PICKED_ACCENT, "#89b4fa"), width=4)
         accent.pack(side="left", fill="y")
@@ -98,7 +102,7 @@ class Notification(tk.Toplevel):
         body = tk.Frame(self, bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), padx=12, pady=8)
         body.pack(side="left", fill="both", expand=True)
 
-        title = tk.Label(body, text="New app opened",
+        title = tk.Label(body, text=info,
                          bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg="#cdd6f4",
                          font=("Segoe UI", 8), anchor="w")
         title.pack(fill="x")
@@ -119,6 +123,9 @@ class Notification(tk.Toplevel):
         close_btn.pack(side="right", anchor="n", pady=5)
         close_btn.bind("<Button-1>", lambda e: self._slide_out_activate())
 
+        if not showActions:
+            return
+        
         quit_btn = tk.Label(self, text="🚫", bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg="#f38ba8", 
                             font=("Segoe UI", 9), padx=8, cursor="hand2")
         quit_btn.pack(side="right", anchor="n", pady=5)
@@ -198,7 +205,7 @@ class CheckMgr(tk.Tk):
         for exe in nove:
             slot = self._next_slot()
             self.active_slots.add(slot)
-            Notification(self, exe, slot, self._on_done)
+            Notification(self, exe, slot, self._on_done, "New app opened", True)
         self.prev = aktu
         self.after(1000, self.check)
 
@@ -271,7 +278,22 @@ class systemTrayIcon:
                 "SHOW_EXTENSION": SHOW_EXTENSION
             })
             self.icon.update_menu()
+            
+            slot = root._next_slot()
+            root.active_slots.add(slot)
+            Notification(root, PICKED_ACCENT, slot, root._on_done, "A new popup will look like this", False)
         return inner
+    
+    def toggle_extension(self):
+        global SHOW_EXTENSION
+        SHOW_EXTENSION = not SHOW_EXTENSION
+        Data().save({
+            "PICKED_ACCENT": PICKED_ACCENT,
+            "PICKED_BODY": PICKED_BODY,
+            "PLAY_SOUND": PLAY_SOUND,
+            "SHOW_EXTENSION": SHOW_EXTENSION
+        })
+        self.icon.update_menu()
 
 import threading
 
