@@ -28,4 +28,5 @@ Right-click the icon to open the menu. You can:
 
 * Toggle sound on/off
 * Change popup theme (red / yellow / green / blue / purple)
+* Toggle extensions (.exe, .pdf etc.)
 * Quit the app
