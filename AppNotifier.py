@@ -13,9 +13,9 @@ import json
 
 NOTIF_W = 320
 NOTIF_H = 70
-SPEED = 12       # px za frame při slide-in/out
-PAUSE = 5000     # ms jak dlouho zůstane notifikace viditelná
-GAP = 10         # mezera mezi notifikacemi a od okraje
+SPEED = 12   
+PAUSE = 5000 
+GAP = 10     
 
 def resource_path(relative_path):
     try:
@@ -59,23 +59,23 @@ class Data:
         return {}
 
 DATA = Data().load()
-PICKED_ACCENT = DATA.get("PICKED_ACCENT", "Modrá")
-PICKED_BODY = DATA.get("PICKED_BODY", "Modrá") 
+PICKED_ACCENT = DATA.get("PICKED_ACCENT", "Blue")
+PICKED_BODY = DATA.get("PICKED_BODY", "Blue") 
 PLAY_SOUND = DATA.get("PLAY_SOUND", True)
 
 COLORS_ACCENT = {
-    "Modrá": "#89b4fa",
-    "Červená": "#f38ba8",
-    "Zelená": "#a6e3a1",
-    "Fialová": "#cba6f7",
-    "Žlutá": "#f9e2af"
+    "Blue": "#89b4fa",
+    "Red": "#f38ba8",
+    "Green": "#a6e3a1",
+    "Purple": "#cba6f7",
+    "Yellow": "#f9e2af"
 }
 COLORS_BODY =  {
-    "Modrá": "#1e1e2e",
-    "Červená": "#2e1e2a",
-    "Zelená": "#1e2e23",
-    "Fialová": "#271e2e",
-    "Žlutá": "#2e2e1e"
+    "Blue": "#1e1e2e",
+    "Red": "#2e1e2a",
+    "Green": "#1e2e23",
+    "Purple": "#271e2e",
+    "Yellow": "#2e2e1e"
 }
 
 pygame.mixer.init()
@@ -86,12 +86,12 @@ class Notification(tk.Toplevel):
         self.overrideredirect(True)
         self.attributes("-topmost", True)
         self.on_done = on_done
-        self.slot = slot  # pořadí notifikace (0 = nejnižší)
+        self.slot = slot
 
         sw = self.winfo_screenwidth()
         sh = self.winfo_screenheight()
         self.target_x = sw - NOTIF_W - GAP
-        self.hidden_x = sw + 10  # mimo obrazovku vpravo
+        self.hidden_x = sw + 10
         self.y = sh - NOTIF_H - GAP - slot * (NOTIF_H + GAP)
 
         self.geometry(f"{NOTIF_W}x{NOTIF_H}+{self.hidden_x}+{self.y}")
@@ -103,14 +103,13 @@ class Notification(tk.Toplevel):
     def _build_ui(self, app):
         self.configure(bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"))
 
-        # Levý barevný proužek
         accent = tk.Frame(self, bg=COLORS_ACCENT.get(PICKED_ACCENT, "#89b4fa"), width=4)
         accent.pack(side="left", fill="y")
 
         body = tk.Frame(self, bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), padx=12, pady=8)
         body.pack(side="left", fill="both", expand=True)
 
-        title = tk.Label(body, text="Nová aplikace spuštěna",
+        title = tk.Label(body, text="New app opened",
                          bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg="#cdd6f4",
                          font=("Segoe UI", 8), anchor="w")
         title.pack(fill="x")
@@ -120,19 +119,16 @@ class Notification(tk.Toplevel):
                         font=("Segoe UI", 11, "bold"), anchor="w")
         name.pack(fill="x")
 
-        # Tlačítko zavřít
         close_btn = tk.Label(self, text="✕", bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg="#6c7086",
                              font=("Segoe UI", 9), padx=8, cursor="hand2")
         close_btn.pack(side="right", anchor="n", pady=5)
         close_btn.bind("<Button-1>", lambda e: self._slide_out_activate())
 
-        # Tlačítko ukončení (otevřené aplikace)
         quit_btn = tk.Label(self, text="🚫", bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg="#f38ba8", 
                             font=("Segoe UI", 9), padx=8, cursor="hand2")
         quit_btn.pack(side="right", anchor="n", pady=5)
         quit_btn.bind("<Button-1>", lambda e: self._kill_app(app))
 
-        # Tlačítko na vyhledání aplikace online
         search_btn = tk.Label(self, text="🔍", bg=COLORS_BODY.get(PICKED_BODY, "#1e1e2e"), fg="#89b4fa",
                               font=("Segoe UI", 9), padx=8, cursor="hand2")
         search_btn.pack(side="right", anchor="n", pady=5)
@@ -190,7 +186,7 @@ class CheckMgr(tk.Tk):
         super().__init__()
         self.withdraw()
         self.prev = self.get_running_apps()
-        self.active_slots = set()  # obsazené sloty
+        self.active_slots = set()
         self.after(1000, self.check)
 
     def _next_slot(self):
@@ -228,25 +224,25 @@ class systemTrayIcon:
     def __init__(self):
         global PLAY_SOUND
         self.menu = pystray.Menu(
-            pystray.MenuItem("Zvuk", self.toggle_sound, checked=lambda item: PLAY_SOUND),
-            pystray.MenuItem("Nastavit barvu", pystray.Menu(
-                pystray.MenuItem("Červená", self.change_theme("Červená")),
-                pystray.MenuItem("Žlutá", self.change_theme("Žlutá")),
-                pystray.MenuItem("Zelená", self.change_theme("Zelená")),
-                pystray.MenuItem("Modrá", self.change_theme("Modrá")),
-                pystray.MenuItem("Fialová", self.change_theme("Fialová"))
+            pystray.MenuItem("Toggle Sound", self.toggle_sound, checked=lambda item: PLAY_SOUND),
+            pystray.MenuItem("Change Theme", pystray.Menu(
+                pystray.MenuItem("Red", self.change_theme("Red")),
+                pystray.MenuItem("Yellow", self.change_theme("Yellow")),
+                pystray.MenuItem("Green", self.change_theme("Green")),
+                pystray.MenuItem("Blue", self.change_theme("Blue")),
+                pystray.MenuItem("Purple", self.change_theme("Purple"))
             )),
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Ukončit", self.quit)
+            pystray.MenuItem("Quit", self.quit)
         )
         self.icon = pystray.Icon(
             "AppNotifier",
-            icon=Image.open(resource_path("icon.ico")),  # načti jako PIL Image
+            icon=Image.open(resource_path("icon.ico")),
             title="App Notifier",
             menu=self.menu
         )
     
-    def quit(self): #ukončit celou aplikaci
+    def quit(self):
         Data().save({
             "PICKED_ACCENT": PICKED_ACCENT,
             "PICKED_BODY": PICKED_BODY,
@@ -259,7 +255,7 @@ class systemTrayIcon:
     def toggle_sound(self):
         global PLAY_SOUND
         PLAY_SOUND = not PLAY_SOUND
-        Data().save({  # Přidejte toto pro okamžité uložení
+        Data().save({
             "PICKED_ACCENT": PICKED_ACCENT,
             "PICKED_BODY": PICKED_BODY,
             "PLAY_SOUND": PLAY_SOUND
@@ -271,7 +267,7 @@ class systemTrayIcon:
             global PICKED_ACCENT, PICKED_BODY
             PICKED_ACCENT = color
             PICKED_BODY = color
-            Data().save({  # Přidejte toto pro okamžité uložení
+            Data().save({ 
                 "PICKED_ACCENT": PICKED_ACCENT,
                 "PICKED_BODY": PICKED_BODY,
                 "PLAY_SOUND": PLAY_SOUND
@@ -284,10 +280,8 @@ import threading
 if __name__ == '__main__':
     trayicon = systemTrayIcon()
 
-    # Pystray ve vedlejším vlákně
     t = threading.Thread(target=trayicon.icon.run, daemon=True)
     t.start()
 
-    # Tkinter v hlavním vlákně
     root = CheckMgr()
     root.mainloop()
