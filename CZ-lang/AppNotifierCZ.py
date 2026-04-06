@@ -310,4 +310,9 @@ if __name__ == '__main__':
 
     # Tkinter v hlavním vlákně
     root = CheckMgr()
+
+    slot = root._next_slot()
+    root.active_slots.add(slot)
+    Notification(root, "App Notifier je spuštěn v pozadí", slot, root._on_done, "Pozor!", False)
+    
     root.mainloop()

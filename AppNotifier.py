@@ -304,4 +304,9 @@ if __name__ == '__main__':
     t.start()
 
     root = CheckMgr()
+
+    slot = root._next_slot()
+    root.active_slots.add(slot)
+    Notification(root, "App Notifier is running in the bg", slot, root._on_done, "Info", False)
+    
     root.mainloop()
